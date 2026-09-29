@@ -1,0 +1,26 @@
+name: Standalone checks
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check TypeScript declarations and chained edits
+        run: npx --yes --package typescript@5.8.3 tsc --strict --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 test/types.test.ts test/composition.test.ts
+      - run: npm test
+      - run: npm run example
+      - run: python -m unittest -v
+      - run: node examples/host-precondition.mjs
+      - run: python build.py dist
