@@ -5,6 +5,17 @@ inverse. Not a state store, MIDI editor, authorization service, or JSON Patch en
 
 **Version: `0.1.3`. Licensed under the MIT License.**
 
+## Demo: undo only the selected change / 選んだ変更だけ戻す
+
+A one-file, offline example of changing a bass choice, editing drums separately,
+and reverting **only** the bass choice; stale inverse operations are rejected.
+It edits **JSON data**, not sound, and does not require an AI service or account.
+
+- [デモの使い方・制限事項（日本語 / English）](docs/demo-20261111/README.md)
+- [Downloadable standalone HTML source](docs/demo-20261111/index.html) (download raw HTML and open it locally)
+- [Feedback and bug reports](https://github.com/Yuliasiris/reversible-change-core-oss/issues)
+
+
 ## Run a complete example
 
 From a checkout of this source, using Node 22 or later:
