@@ -1,0 +1,329 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="ベースの案だけを戻して、手で直したドラムは残す。Reversible Change Coreの実コードを試せるデモ。"><title>戻したい変更だけ、戻す。 | Reversible Change Core</title><style>
+:root{color-scheme:light;--ink:#172e39;--muted:#4e6370;--line:#cad9df;--accent:#075d71;--paper:#f6f9fa;--good:#226044;--warning:#824d13}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font-family:system-ui,-apple-system,'Noto Sans CJK JP','Yu Gothic',sans-serif;font-size:17px;line-height:1.8}a{color:var(--accent);text-underline-offset:4px}a:hover{text-decoration-thickness:2px}button{font:inherit;line-height:1.45;cursor:pointer;min-height:48px;padding:13px 18px;border:1px solid var(--accent);border-radius:7px;background:#fff;color:var(--accent);font-weight:650}button:disabled{cursor:not-allowed;opacity:.48}button:hover:not(:disabled){background:#eaf4f6}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #c26918;outline-offset:4px}.primary{background:var(--accent);color:#fff}.primary:hover:not(:disabled){background:#064c5c}header{max-width:1060px;margin:auto;padding:23px 34px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;align-items:center}header span{font-weight:750}header a{font-size:14px}main{max-width:1060px;margin:auto;padding:48px 34px 72px}h1{font-size:clamp(30px,4.8vw,52px);line-height:1.35;letter-spacing:-.025em;margin:0 0 24px;max-width:900px}h2{font-size:25px;line-height:1.4;margin:0 0 18px}p{margin:0 0 18px}.lead{max-width:730px;color:var(--muted);font-size:19px}.boundary{font-size:14px;max-width:790px;color:var(--muted)}.lab{margin-top:36px;background:var(--paper);border-top:4px solid var(--accent);padding:27px 28px 22px}.lab-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}.lab-title h2{margin:0}.quiet{border:0;background:transparent;padding:10px 5px;font-size:14px;font-weight:500;text-decoration:underline}.parts{margin:18px 0;border-top:1px solid var(--line)}.part{display:grid;grid-template-columns:120px 1fr 130px;align-items:center;gap:14px;padding:18px 0;border-bottom:1px solid var(--line)}.part dt{font-size:15px;font-weight:650}.part dd{margin:0;font-size:22px;font-weight:700}.part small{text-align:right;color:var(--muted);font-size:14px}.actions{display:flex;flex-wrap:wrap;gap:12px}.actions button{flex:1;min-width:190px}.notice{min-height:64px;margin-top:18px;margin-bottom:6px;font-weight:650;padding:12px 0;color:var(--good)}.notice.warn{color:var(--warning)}.utility{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:10px}.utility button{font-size:14px;min-height:44px;padding:10px 14px;font-weight:500;border-color:var(--line)}#save-note{color:var(--muted);font-size:13px;margin:9px 0 0}.below{margin:34px 0 0;max-width:850px}.below h2{font-size:22px}.below p{font-size:16px;color:var(--muted)}details{padding:18px 0;border-bottom:1px solid var(--line)}summary{font-size:16px;font-weight:650;cursor:pointer}details p{margin-top:14px}pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:18px;background:#eff3f5;border-radius:4px;font:13px/1.7 ui-monospace,monospace;max-width:100%;color:var(--ink)}.links{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px}.caption{font-size:13px;color:var(--muted)}footer{border-top:1px solid var(--line);padding:22px 34px;max-width:1060px;margin:auto;font-size:13px;color:var(--muted)}ol{padding-left:24px}li{margin-bottom:8px}
+@media(max-width:600px){header{padding:18px 20px;flex-wrap:wrap;gap:6px}main{padding:30px 20px 44px}.lead{font-size:17px}.lab{padding:20px 16px}.part{grid-template-columns:74px 1fr;gap:6px;padding:15px 0}.part small{grid-column:2;text-align:left}.part dd{font-size:20px}.actions{gap:10px}.actions button{flex-basis:100%;min-width:0}.lab-title{align-items:flex-start}h2{font-size:22px}.notice{min-height:92px}.links{gap:12px}footer{padding:20px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style></head>
+<body><header><span>Reversible Change Core</span><a href="https://github.com/Yuliasiris/reversible-change-core-oss" rel="noopener">ソースを見る</a></header><main>
+<h1>戻したい変更だけ、戻す。</h1><p class="lead">ベースを別の案に替えたあと、ドラムを手で直した。<br>ベースを戻すために、そのドラムまで捨てたくない。</p>
+<p class="boundary">このページは選択データを変更する実行例です。音は鳴りません。AIへの接続やDAWの音声編集ではなく、公開済みの小さな部品が何をするかを試せます。</p>
+<section class="lab" aria-labelledby="demo-title"><div class="lab-title"><h2 id="demo-title">3つの操作で試す</h2><button id="reset" class="quiet">初めから試す</button></div>
+<dl class="parts"><div class="part"><dt>メロディ</dt><dd>本人の原案</dd><small>変更しない</small></div><div class="part"><dt>ベース</dt><dd id="bass-value">A案</dd><small id="bass-detail">初めの案</small></div><div class="part"><dt>ドラム</dt><dd id="drums-value">元のパターン</dd><small id="drums-detail">未変更</small></div></dl>
+<div class="actions"><button id="bass">1　ベースをB案にする</button><button id="drums">2　ドラムを手修正する</button><button id="revert" class="primary">3　ベースだけA案へ戻す</button></div>
+<p id="notice" class="notice" role="status" aria-live="polite"></p>
+<div class="utility"><button id="save">この状態を保存</button><button id="export">結果のJSONを書き出す</button><button id="clear">保存を消す</button></div><p id="save-note">保存先はこのブラウザー内です。通信・アカウント・課金はありません。保存と書出しは、このデモ側の機能です。</p>
+</section>
+<section class="below"><h2>できることと、任せていないこと</h2><p>変更した項目の現在値を確認してから、逆の変更を適用します。他の項目に入った後の編集は、まとめて巻き戻しません。保存先や利用者の権限、対象文書の同一性は、利用するアプリ側で扱います。</p>
+<details><summary>別の変更と衝突したら？</summary><p>B案を作ったあと、先にベースをC案へ変更してください。その状態で「ベースだけA案へ戻す」を押すと、現在値が一致しないため戻さずにC案を保持します。</p><button id="conflict">ベースをさらにC案へ変更</button></details>
+<details><summary>実際のデータと操作履歴を見る</summary><pre id="json"></pre><ol id="events"></ol></details>
+<details><summary>自分のプロジェクトで試す</summary><p>このページの変更処理は Reversible Change Core 0.1.3 の実ソースです。独自の状態ストアや任意のUndoエンジンではありません。Node.js向けの実行例、制限、ライセンスは元リポジトリにあります。</p><pre>node examples/basic.mjs</pre><p>ダウンロードしたHTMLはそのままブラウザーで開けます。ファイルURLでの保存可否はブラウザーによって異なります。この版はデータ処理と模擬DOMで検査済みです。実ブラウザーの表示・操作検査は実行環境の管理ポリシーによる拒否で未完です。</p></details>
+<div class="links"><a href="https://github.com/Yuliasiris/reversible-change-core-oss">GitHubでコードを読む</a><a href="https://github.com/Yuliasiris/reversible-change-core-oss/issues">使い道・不具合を伝える</a></div><p class="caption">フィードバックには、試した操作と実際の結果を添えてください。秘密や未公開作品を貼る必要はありません。脆弱性はリポジトリのSECURITY.mdへ。</p></section>
+</main><footer>Core 0.1.3 / Demo 1.0.0 · MIT License · 実行用の架空データのみ。自動送信・分析タグ・外部依存なし。</footer><script>// Immutable JSON change algebra. Caller owns authorization and wire version.
+function createChangeSet(projectState, request, schemaVersion) {
+  if (!nonEmpty(schemaVersion)) throw new TypeError("missing caller wire version");
+  assertCanonicalJsonValue(projectState, "projectState");
+  assertPlainRecord(projectState, "projectState");
+  assertCanonicalJsonValue(request, "change request");
+  assertPlainRecord(request, "change request");
+  if (!nonEmpty(request?.change_id) || !nonEmpty(request?.axis)
+    || !Array.isArray(request?.untouched_axes) || !request.untouched_axes.every(nonEmpty)) {
+    throw new TypeError("invalid change request");
+  }
+  parseAxis(request.axis);
+  for (const untouchedAxis of request.untouched_axes) parseAxis(untouchedAxis);
+  assertCanonicalJsonValue(request.from, "change request from");
+  assertCanonicalJsonValue(request.to, "change request to");
+  if (request.untouched_axes.some((axis) => pathsOverlap(axis, request.axis))) {
+    throw new TypeError("changed axis conflicts with untouched axis");
+  }
+  const current = readAxis(projectState, request.axis);
+  if (!sameValue(current, request.from)) throw new RangeError("change preimage mismatch");
+  const changeSet = {
+    schema_version: schemaVersion,
+    change_id: request.change_id,
+    changed_axis: request.axis,
+    untouched_axes: [...request.untouched_axes],
+    forward: { axis: request.axis, from: cloneJsonValue(request.from), to: cloneJsonValue(request.to) },
+    inverse: { axis: request.axis, from: cloneJsonValue(request.to), to: cloneJsonValue(request.from) },
+  };
+  return deepFreeze(changeSet);
+}
+
+/** @param {Record<string, unknown>} projectState @param {ReturnType<typeof createChangeSet>} changeSet */
+function applyChangeSet(projectState, changeSet) {
+  assertChangeSet(changeSet);
+  return applyAxisTransition(projectState, changeSet.forward);
+}
+
+/** @param {Record<string, unknown>} projectState @param {ReturnType<typeof createChangeSet>} changeSet */
+function applyExactInverse(projectState, changeSet) {
+  assertChangeSet(changeSet);
+  return applyAxisTransition(projectState, changeSet.inverse);
+}
+
+/** @param {Record<string, unknown>} projectState @param {{axis:string,from:unknown,to:unknown}} transition */
+function applyAxisTransition(projectState, transition) {
+  assertCanonicalJsonValue(projectState, "projectState");
+  assertPlainRecord(projectState, "projectState");
+  const output = cloneJsonValue(projectState);
+  const current = readAxis(output, transition.axis);
+  if (!sameValue(current, transition.from)) throw new RangeError("change preimage mismatch");
+  writeAxis(output, transition.axis, cloneJsonValue(transition.to));
+  return deepFreeze(output);
+}
+
+/** Validate data, not provenance: approval still belongs to the caller. */
+function assertChangeSet(changeSet) {
+  assertCanonicalJsonValue(changeSet, "ChangeSet");
+  assertPlainRecord(changeSet, "ChangeSet");
+  if (!nonEmpty(changeSet.schema_version) || !nonEmpty(changeSet.change_id)
+    || !nonEmpty(changeSet.changed_axis) || !Array.isArray(changeSet.untouched_axes)
+    || !changeSet.untouched_axes.every(nonEmpty)) {
+    throw new TypeError("invalid ChangeSet envelope");
+  }
+  parseAxis(changeSet.changed_axis);
+  for (const axis of changeSet.untouched_axes) {
+    parseAxis(axis);
+    if (pathsOverlap(axis, changeSet.changed_axis)) {
+      throw new TypeError("changed axis conflicts with untouched axis");
+    }
+  }
+  for (const transition of [changeSet.forward, changeSet.inverse]) {
+    assertPlainRecord(transition, "ChangeSet transition");
+    if (transition.axis !== changeSet.changed_axis
+      || !Object.hasOwn(transition, "from") || !Object.hasOwn(transition, "to")) {
+      throw new TypeError("transition does not match changed axis");
+    }
+  }
+  if (!sameValue(changeSet.forward.from, changeSet.inverse.to)
+    || !sameValue(changeSet.forward.to, changeSet.inverse.from)) {
+    throw new TypeError("forward and inverse are not symmetric");
+  }
+}
+
+/** @param {Record<string, unknown>} object @param {string} axis */
+function readAxis(object, axis) {
+  return parseAxis(axis).reduce((value, key) => {
+    if (!isPlainRecord(value) || !Object.hasOwn(value, key)) throw new TypeError(`unknown change axis: ${axis}`);
+    return value[key];
+  }, object);
+}
+
+/** @param {Record<string, unknown>} object @param {string} axis @param {unknown} value */
+function writeAxis(object, axis, value) {
+  const keys = parseAxis(axis);
+  const finalKey = keys.pop();
+  if (!finalKey) throw new TypeError("empty change axis");
+  const parent = keys.reduce((current, key) => {
+    if (!isPlainRecord(current) || !Object.hasOwn(current, key) || !isPlainRecord(current[key])) {
+      throw new TypeError(`unknown change axis: ${axis}`);
+    }
+    return current[key];
+  }, object);
+  if (!isPlainRecord(parent) || !Object.hasOwn(parent, finalKey)) {
+    throw new TypeError(`unknown change axis: ${axis}`);
+  }
+  parent[finalKey] = value;
+}
+
+/** @param {unknown} value */
+function stableJson(value) {
+  assertCanonicalJsonValue(value, "stableJson input");
+  return JSON.stringify(sortValue(value));
+}
+
+/** @param {unknown} value */
+function sortValue(value) {
+  if (Array.isArray(value)) return value.map(sortValue);
+  if (isRecord(value)) {
+    return Object.fromEntries(Object.entries(value)
+      .sort(([left], [right]) => compareCodeUnits(left, right))
+      .map(([key, child]) => [key, sortValue(child)]));
+  }
+  return value;
+}
+
+/** @param {unknown} value */
+function deepFreeze(value, seen = new WeakSet()) {
+  if ((Array.isArray(value) || isRecord(value)) && !seen.has(value)) {
+    seen.add(value);
+    if (!Object.isFrozen(value)) Object.freeze(value);
+    // Traverse data descriptors even below a frozen parent, without running getters.
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    for (const key of Reflect.ownKeys(descriptors)) {
+      const descriptor = descriptors[key];
+      if (Object.hasOwn(descriptor, "value")) deepFreeze(descriptor.value, seen);
+    }
+  }
+  return value;
+}
+
+/** @param {unknown} value */
+function isRecord(value) {
+  return value !== null && typeof value === "object" && !ArrayBuffer.isView(value);
+}
+
+/** @param {unknown} value */
+function isPlainRecord(value) {
+  if (!isRecord(value) || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+/** @param {unknown} value */
+function nonEmpty(value) {
+  return typeof value === "string" && value.length > 0;
+}
+
+/** @param {unknown} value */
+function finite(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+/** @param {unknown} value @param {string} name */
+function assertPlainRecord(value, name) {
+  if (!isPlainRecord(value)) throw new TypeError(`${name} must be a plain object`);
+}
+
+const FORBIDDEN_AXIS_SEGMENTS = new Set(["__proto__", "prototype", "constructor"]);
+
+/** @param {string} axis */
+function parseAxis(axis) {
+  if (!nonEmpty(axis)) throw new TypeError("empty change axis");
+  const segments = axis.split(".");
+  if (segments.some((segment) => !nonEmpty(segment) || FORBIDDEN_AXIS_SEGMENTS.has(segment))) {
+    throw new TypeError(`unsafe change axis: ${axis}`);
+  }
+  return segments;
+}
+
+/** @param {unknown} value @param {string} name @param {Set<unknown>} [seen] */
+function assertCanonicalJsonValue(value, name, seen = new Set()) {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new TypeError(`${name} must contain only finite JSON numbers`);
+    return;
+  }
+  if (typeof value !== "object") throw new TypeError(`${name} must be a canonical JSON value`);
+  if (seen.has(value)) throw new TypeError(`${name} must not contain cycles`);
+  seen.add(value);
+  // JSON data excludes accessors, symbols and hidden fields. Inspect descriptors
+  // without evaluating getters. Hostile Proxy objects are outside this API's contract.
+  if (!Array.isArray(value) && !isPlainRecord(value)) {
+    throw new TypeError(`${name} must contain only plain objects`);
+  }
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const ownKeys = Reflect.ownKeys(descriptors);
+  if (ownKeys.some(key => typeof key === "symbol")) {
+    throw new TypeError(`${name} must not contain symbol keys`);
+  }
+  const dataKeys = Array.isArray(value) ? ownKeys.filter(key => key !== "length") : ownKeys;
+  if (Array.isArray(value) && (dataKeys.length !== value.length
+    || dataKeys.some((key, index) => key !== String(index)))) {
+    throw new TypeError(`${name} must contain only dense array elements`);
+  }
+  for (const key of dataKeys) {
+    const descriptor = descriptors[key];
+    if (!Object.hasOwn(descriptor, "value") || !descriptor.enumerable) {
+      throw new TypeError(`${name} must contain only enumerable data properties`);
+    }
+    if (FORBIDDEN_AXIS_SEGMENTS.has(key)) throw new TypeError(`${name} contains a forbidden key`);
+    assertCanonicalJsonValue(descriptor.value, name, seen);
+  }
+  seen.delete(value);
+}
+
+/** @param {string} left @param {string} right */
+function compareCodeUnits(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+/** @param {unknown} left @param {unknown} right */
+function sameValue(left, right) {
+  return stableJson(left) === stableJson(right);
+}
+
+/** @param {string} left @param {string} right */
+function pathsOverlap(left, right) {
+  return left === right || left.startsWith(`${right}.`) || right.startsWith(`${left}.`);
+}
+
+// Called only after JSON validation. JSON has value semantics, so shared input
+// references must not make a write to one path change a declared untouched path.
+function cloneJsonValue(value) {
+  if (Array.isArray(value)) return value.map(cloneJsonValue);
+  if (isPlainRecord(value)) return Object.fromEntries(Object.entries(value)
+    .map(([key, child]) => [key, cloneJsonValue(child)]));
+  return value;
+}
+
+const VERSION='1.0.0';
+const initialState=()=>({melody:{choice:'original'},bass:{choice:'A'},drums:{choice:'original'}});
+function initialSession(){return {version:VERSION, state:initialState(), change:null, events:[]};}
+function act(session, action){
+  const next=structuredClone(session);
+  if(action==='bass'){
+    next.change=createChangeSet(next.state,{change_id:'bass-A-to-B',axis:'bass.choice',from:'A',to:'B',untouched_axes:['melody.choice','drums.choice']},'r4.public-demo/1');
+    next.state=applyChangeSet(next.state,next.change);
+    next.events.push('ベースだけを A案 → B案に変更しました。');
+  }else if(action==='drums'){
+    const change=createChangeSet(next.state,{change_id:'drums-manual',axis:'drums.choice',from:'original',to:'edited',untouched_axes:['melody.choice','bass.choice']},'r4.public-demo/1');
+    next.state=applyChangeSet(next.state,change);
+    next.events.push('ドラムを手修正版へ変更しました。');
+  }else if(action==='conflict'){
+    const change=createChangeSet(next.state,{change_id:'bass-later-C',axis:'bass.choice',from:'B',to:'C',untouched_axes:['melody.choice','drums.choice']},'r4.public-demo/1');
+    next.state=applyChangeSet(next.state,change);
+    next.events.push('別の変更で、ベースを C案へ変更しました。');
+  }else if(action==='revert'){
+    if(!next.change) throw new Error('先にベースの変更を作ってください。');
+    try{
+      next.state=applyExactInverse(next.state,next.change);
+      next.events.push('ベースを A案へ戻しました。他の項目はそのままです。');
+    }catch(e){
+      if(!(e instanceof RangeError)) throw e;
+      next.events.push('戻しませんでした。ベースはすでに別の値です。現在の案を保持しています。');
+    }
+  }else throw new Error('未知の操作です。');
+  next.events=next.events.slice(-200);
+  return next;
+}
+function readSaved(text){
+  const s=JSON.parse(text);
+  if(s?.version!==VERSION || !Array.isArray(s.events) || s.events.length>200 || !s.events.every(x=>typeof x==='string'&&x.length<240)) throw new Error('保存形式が異なります。');
+  if(!s.state || stableJson(Object.keys(s.state).sort())!==stableJson(['bass','drums','melody'])) throw new Error('保存対象が異なります。');
+  if(s.state.melody?.choice!=='original' || !['A','B','C'].includes(s.state.bass?.choice) || !['original','edited'].includes(s.state.drums?.choice)) throw new Error('保存値が不正です。');
+  for(const part of Object.values(s.state)) if(stableJson(Object.keys(part))!==stableJson(['choice'])) throw new Error('保存項目が不正です。');
+  if(s.change){
+    const expected=createChangeSet(initialState(),{change_id:'bass-A-to-B',axis:'bass.choice',from:'A',to:'B',untouched_axes:['melody.choice','drums.choice']},'r4.public-demo/1');
+    if(stableJson(expected)!==stableJson(s.change)) throw new Error('変更記録が一致しません。');
+  }else if(s.state.bass.choice!=='A') throw new Error('変更記録がありません。');
+  return s;
+}
+
+
+const KEY='r4-demo-v1';let session=initialSession();let status='まずベースをB案にしてみてください。';let warning=false;
+try{const saved=localStorage.getItem(KEY);if(saved){session=readSaved(saved);status='このブラウザーに保存したデモを読み込みました。';}}catch(e){status='保存内容を読み込めませんでした。元の保存は消さず、初期表示にしています。';warning=true;}
+const el=id=>document.getElementById(id);
+function render(){
+ el('bass-value').textContent=session.state.bass.choice+'案';
+ el('drums-value').textContent=session.state.drums.choice==='edited'?'手修正版':'元のパターン';
+ el('bass-detail').textContent=session.state.bass.choice==='A'?'初めの案':session.state.bass.choice==='B'?'今回の変更先':'後から選んだ案';
+ el('drums-detail').textContent=session.state.drums.choice==='edited'?'変更を保持':'未変更';
+ el('bass').disabled=session.state.bass.choice!=='A';
+ el('drums').disabled=session.state.drums.choice!=='original';
+ el('revert').disabled=!session.change || session.state.bass.choice==='A';
+ el('conflict').disabled=!session.change || session.state.bass.choice!=='B';
+ el('notice').textContent=status;el('notice').className='notice'+(warning?' warn':'');
+ el('json').textContent=JSON.stringify({state:session.state,change:session.change},null,2);
+ el('events').replaceChildren(...session.events.map(t=>{const n=document.createElement('li');n.textContent=t;return n;}));
+}
+for(const id of ['bass','drums','conflict','revert'])el(id).addEventListener('click',()=>{
+ try{session=act(session,id);status=session.events.at(-1);warning=id==='revert'&&session.state.bass.choice==='C';}
+ catch(e){status='操作を適用しませんでした。'+e.message;warning=true;}render();
+});
+el('reset').addEventListener('click',()=>{session=initialSession();status='デモを初めに戻しました。保存済みの内容は変更していません。';warning=false;render();});
+el('save').addEventListener('click',()=>{try{localStorage.setItem(KEY,JSON.stringify(session));status='このブラウザーに保存しました。再読込みで続きを開けます。';warning=false;}catch(e){status='このブラウザーには保存できません。JSONを書き出して保持できます。';warning=true;}render();});
+el('clear').addEventListener('click',()=>{try{localStorage.removeItem(KEY);status='このデモのブラウザー保存だけを消去しました。画面の内容は保持しています。';warning=false;}catch(e){status='保存を消去できませんでした。';warning=true;}render();});
+el('export').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({demo_version:VERSION,core_version:'0.1.3',...session},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='reversible-demo-result.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status='現在のデモ結果をJSONで書き出しました。外部送信はしていません。';warning=false;render();});
+render();
+</script></body></html>
